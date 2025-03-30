@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -50,6 +51,7 @@ public class calculator implements KeyListener, ActionListener{
         //create JFrame
         frame.setVisible(true);
         frame.setSize(420, 620);
+        frame.setMinimumSize(new Dimension(420, 620));
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setFocusable(true);
@@ -57,8 +59,8 @@ public class calculator implements KeyListener, ActionListener{
 
         //create resultJLabel
         resultlabel.setBackground(Color.black);
-        resultlabel.setForeground(Color.white);
-        resultlabel.setFont(new Font("Arial", Font.BOLD, 25));
+        resultlabel.setForeground(Color.gray);
+        resultlabel.setFont(new Font("Arial", Font.PLAIN, 25));
         resultlabel.setHorizontalAlignment(JLabel.RIGHT);
         resultlabel.setOpaque(true);
 
@@ -70,7 +72,7 @@ public class calculator implements KeyListener, ActionListener{
         // Show Label
         showlabel.setBackground(Color.black);
         showlabel.setForeground(Color.WHITE);
-        showlabel.setFont(new Font("Arial", Font.BOLD, 60));
+        showlabel.setFont(new Font("Arial", Font.PLAIN, 60));
         showlabel.setHorizontalAlignment(JLabel.RIGHT);
         showlabel.setOpaque(true);
 
@@ -101,12 +103,15 @@ public class calculator implements KeyListener, ActionListener{
                 if (r == 5 && c == 3) {
                     tile.setBackground(Color.orange);
                     tile.setForeground(Color.black);
+                } else if (r < 2 || c > 2) {
+                    tile.setBackground(new Color(50, 50, 50));
+                    tile.setForeground(Color.white);
                 } else {
-                    tile.setBackground(Color.DARK_GRAY);
+                    tile.setBackground(new Color(75,75,75));
                     tile.setForeground(Color.white);
                 }
 
-                tile.setFont(new Font("Arial", Font.BOLD, 20));
+                tile.setFont(new Font("Arial", Font.PLAIN, 20));
                 tile.setFocusable(false);
             }
         }
@@ -122,7 +127,7 @@ public class calculator implements KeyListener, ActionListener{
             String format = df.format(Double.parseDouble(num));
             showlabel.setText(format);
         } catch (Exception e) {
-            showlabel.setText("Cannot divide by zero"); 
+            showlabel.setText("Cannot divide by zero");
             clear();
         }
     }
@@ -145,7 +150,11 @@ public class calculator implements KeyListener, ActionListener{
                     rs = renum.multiply(num);
                     break;
                 case '÷':
+                try {
+                    rs = renum.divide(num);
+                } catch (Exception e) {
                     rs = renum.divide(num, 15, RoundingMode.HALF_UP);
+                }
                     break;
             }
     
@@ -171,6 +180,7 @@ public class calculator implements KeyListener, ActionListener{
         resultlabel.setText(resultnumber + " " + operator + " " + number + " =");
         resultnumber = result(number, resultnumber, operator);
         format_number(resultnumber);
+        clear();
     }
 
     //clear method part
@@ -194,16 +204,16 @@ public class calculator implements KeyListener, ActionListener{
     //Delete input method part
     void delete_input() {
         if (!number.isEmpty()) {
-            number = number.substring(0, number.length()-1);
-            if (!number.isEmpty() && Double.parseDouble(number) % 1 != 0) {
-                format_number(number);
-            } 
-            else if (Double.parseDouble(number) % 1 == 0 && number.contains(".")) {
-                DecimalFormat df = new DecimalFormat("#,###.###############");
-                String format = df.format(Double.parseDouble(number));
-                showlabel.setText(format + ".");
-            } 
-            else {
+            try {
+                number = number.substring(0, number.length()-1);
+                if (Double.parseDouble(number) % 1 == 0 && number.contains(".")) {
+                    DecimalFormat df = new DecimalFormat("#,###.###############");
+                    String format = df.format(Double.parseDouble(number));
+                    showlabel.setText(format + ".");
+                } else if (!number.isEmpty()) {
+                    format_number(number);
+                }
+            } catch (Exception e) {
                 number = "0";
                 showlabel.setText(number);
             }
@@ -230,12 +240,13 @@ public class calculator implements KeyListener, ActionListener{
     void point_input() {
         if (!number.contains(".")) {
             number += ".";
-            // if (Double.parseDouble(number) % 1 == 0) {
+            if (Double.parseDouble(number) % 1 == 0) {
                 DecimalFormat df = new DecimalFormat("#,###.###############");
                 String format = df.format(Double.parseDouble(number));
-            //     showlabel.setText(format + ".");
-            // }
-            showlabel.setText(format + ".");
+                showlabel.setText(format + ".");
+            } else {
+                format_number(number);
+            }
         }
     }
 
@@ -276,6 +287,22 @@ public class calculator implements KeyListener, ActionListener{
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    //percents method part
+    void percent() {
+        if (resultnumber.isEmpty()) {
+            resultnumber = "0";
+            number = "0";
+            resultlabel.setText(resultnumber);
+        } else {
+            number = result(number, resultnumber, 'x');
+            System.out.println(number);
+            number = result("100", number, '÷');
+            System.out.println(number);
+            resultlabel.setText(resultnumber + operator + number);
+            format_number(number);
         }
     }
 
@@ -329,6 +356,11 @@ public class calculator implements KeyListener, ActionListener{
         //plus or minus sysbol part
         else if (key == KeyEvent.VK_F9) {
             Plus_or_Minus();
+        }
+
+        //percent part
+        else if (key == KeyEvent.VK_5 && e.isShiftDown()) {
+            percent();
         }
         
     }
@@ -409,6 +441,11 @@ public class calculator implements KeyListener, ActionListener{
         else if (buttonText.equals("1/x")) {
             number = result(number, "1", '÷');
             format_number(number);
+        }
+
+        //percent part
+        else if (buttonText.equals("%")) {
+            percent();
         }
     }
     
