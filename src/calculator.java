@@ -22,9 +22,7 @@ public class calculator implements KeyListener, ActionListener{
     JFrame frame = new JFrame("Calculator");
 
     //JPanel part
-    JPanel resultpanel = new JPanel();
-    JPanel showpanel = new JPanel();
-    JPanel parentPanel = new JPanel();
+    JPanel toppanel = new JPanel(new GridLayout(2,1));
     JPanel buttonpanel = new JPanel();
 
     //jLabel part
@@ -64,11 +62,6 @@ public class calculator implements KeyListener, ActionListener{
         resultlabel.setHorizontalAlignment(JLabel.RIGHT);
         resultlabel.setOpaque(true);
 
-        //create resultJPanel
-        resultpanel.setLayout(new BorderLayout());
-        resultpanel.add(resultlabel);
-        frame.add(resultpanel, BorderLayout.NORTH);
-
         // Show Label
         showlabel.setBackground(Color.black);
         showlabel.setForeground(Color.WHITE);
@@ -76,15 +69,9 @@ public class calculator implements KeyListener, ActionListener{
         showlabel.setHorizontalAlignment(JLabel.RIGHT);
         showlabel.setOpaque(true);
 
-        showpanel.setLayout(new BorderLayout());
-        showpanel.add(showlabel);
-
-        // Parent Panel to Hold Both
-        parentPanel.setLayout(new GridLayout(2, 1)); // Two rows, one column
-        parentPanel.add(resultpanel);
-        parentPanel.add(showpanel);
-
-        frame.add(parentPanel, BorderLayout.NORTH);
+        toppanel.add(resultlabel);
+        toppanel.add(showlabel);
+        frame.add(toppanel, BorderLayout.NORTH);
 
         //button label
         buttonpanel.setLayout(new GridLayout(6,4));
@@ -177,6 +164,7 @@ public class calculator implements KeyListener, ActionListener{
 
     //equals sysbol method part
     void equals() {
+        point_trim();
         resultlabel.setText(resultnumber + " " + operator + " " + number + " =");
         resultnumber = result(number, resultnumber, operator);
         format_number(resultnumber);
@@ -192,36 +180,40 @@ public class calculator implements KeyListener, ActionListener{
 
     //number input method part
     void numbers_input(String num) {
-        if (!number.equals("0") && number.length() < 16) {
+        if (!number.contains(".") && !number.equals("0") && number.length() < 16) {
             number += num;
-        } else if (number.length() < 16) {
+            format_number(number);
+        } else if (!number.contains(".") && number.length() < 16) {
             number = "";
             number += num;
+            format_number(number);
+        } else if (number.length() < 16) {
+            number += num;
+            String[] sn = number.split("\\.");
+            format_number(number);
+            showlabel.setText(showlabel.getText() + "." + sn[1]);
         }
-        format_number(number);
     }
 
     //Delete input method part
     void delete_input() {
         if (!number.isEmpty()) {
-            try {
-                number = number.substring(0, number.length()-1);
+            number = number.substring(0, number.length()-1);
+            if (!number.isEmpty()) {
+                format_number(number);
                 if (Double.parseDouble(number) % 1 == 0 && number.contains(".")) {
-                    DecimalFormat df = new DecimalFormat("#,###.###############");
-                    String format = df.format(Double.parseDouble(number));
-                    showlabel.setText(format + ".");
-                } else if (!number.isEmpty()) {
-                    format_number(number);
+                    showlabel.setText(showlabel.getText() + ".");
                 }
-            } catch (Exception e) {
+            } else {
                 number = "0";
-                showlabel.setText(number);
+            showlabel.setText(number);
             }
         }
     }
 
     //Operator input method part
     void Operator_input (char op) {
+        point_trim();
         if (resultnumber.isEmpty()) {
             operator = op;
             resultnumber = number;
@@ -232,7 +224,7 @@ public class calculator implements KeyListener, ActionListener{
             operator = op;
         }
         number = "0";
-        resultlabel.setText(resultnumber + operator);
+        resultlabel.setText(resultnumber + " " + operator);
         format_number(resultnumber);
     }
 
@@ -240,12 +232,9 @@ public class calculator implements KeyListener, ActionListener{
     void point_input() {
         if (!number.contains(".")) {
             number += ".";
+            format_number(number);
             if (Double.parseDouble(number) % 1 == 0) {
-                DecimalFormat df = new DecimalFormat("#,###.###############");
-                String format = df.format(Double.parseDouble(number));
-                showlabel.setText(format + ".");
-            } else {
-                format_number(number);
+                showlabel.setText(showlabel.getText() + ".");
             }
         }
     }
@@ -303,6 +292,14 @@ public class calculator implements KeyListener, ActionListener{
             System.out.println(number);
             resultlabel.setText(resultnumber + operator + number);
             format_number(number);
+        }
+    }
+
+    //trim point method
+    void point_trim() {
+        if (Double.parseDouble(number) % 1 == 0 && number.contains(".") && !number.isEmpty()) {
+            String[] sn = number.split("\\.");
+            number = sn[0];
         }
     }
 
