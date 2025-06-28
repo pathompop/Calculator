@@ -10,7 +10,6 @@ import java.awt.event.KeyListener;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -180,19 +179,19 @@ public class calculator implements KeyListener, ActionListener{
 
     //number input method part
     void numbers_input(String num) {
-        if (!number.contains(".") && !number.equals("0") && number.length() < 16) {
+        if (number.length() > 16) return;
+
+        if (!number.contains(".") && !number.equals("0")) {
             number += num;
-            format_number(number);
-        } else if (!number.contains(".") && number.length() < 16) {
+        } else if (!number.contains(".")) {
             number = "";
             number += num;
-            format_number(number);
-        } else if (number.length() < 16) {
+        } else {
             number += num;
             String[] sn = number.split("\\.");
-            format_number(number);
-            showlabel.setText(showlabel.getText() + "." + sn[1]);
+            // showlabel.setText(showlabel.getText() + "." + sn[1]);
         }
+        format_number(number);
     }
 
     //Delete input method part
